@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padi AI - Smart Farming Assistant</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-dark: #1B5E20;
+            --secondary: #FF8F00;
+            --background: #F5F5F5;
+            --card: #FFFFFF;
+            --text: #212121;
+            --text-light: #757575;
+            --danger: #D32F2F;
+            --warning: #F57C00;
+            --success: #388E3C;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--background); color: var(--text); }
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 1.5rem; }
+        .header h1 { font-size: 1.6rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--card); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card h2 { color: var(--primary-dark); margin-bottom: 1rem; }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .form-group input, .form-group select { padding: 0.75rem; border: 2px solid #E0E0E0; border-radius: 8px; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .btn { padding: 0.875rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn:disabled { background: #BDBDBD; cursor: not-allowed; }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .result-section { background: var(--card); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .result-section h3 { color: var(--primary-dark); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
+        .weather-main { text-align: center; padding: 1rem; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border-radius: 12px; margin-bottom: 1rem; }
+        .weather-temp { font-size: 3rem; font-weight: bold; color: var(--primary-dark); }
+        .weather-icon { font-size: 4rem; margin-bottom: 0.5rem; }
+        .weather-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .weather-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #F5F5F5; border-radius: 6px; font-size: 0.85rem; }
+        .forecast-list { display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0; }
+        .forecast-day { flex: 0 0 auto; text-align: center; padding: 0.75rem; background: #F5F5F5; border-radius: 8px; min-width: 80px; }
+        .forecast-day .date { font-weight: 600; font-size: 0.8rem; }
+        .forecast-day .temp { font-size: 1.1rem; font-weight: bold; color: var(--primary); }
+        .forecast-day .rain { font-size: 0.75rem; color: #1976D2; }
+        .risk-card { padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; border-left: 4px solid; }
+        .risk-high { background: #FFEBEE; border-color: var(--danger); }
+        .risk-moderate { background: #FFF3E0; border-color: var(--warning); }
+        .risk-low { background: #E8F5E9; border-color: var(--success); }
+        .risk-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .risk-name { font-weight: 600; }
+        .risk-level { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; }
+        .risk-high .risk-level { background: var(--danger); }
+        .risk-moderate .risk-level { background: var(--warning); }
+        .risk-low .risk-level { background: var(--success); }
+        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 600; margin-bottom: 1rem; }
+        .status-good { background: #E8F5E9; color: var(--success); }
+        .status-warning { background: #FFF3E0; color: var(--warning); }
+        .status-danger { background: #FFEBEE; color: var(--danger); }
+        .fertilizer-item { display: flex; justify-content: space-between; padding: 0.75rem; background: #F5F5F5; border-radius: 8px; margin-bottom: 0.5rem; }
+        .fertilizer-item .type { font-weight: 600; color: var(--primary-dark); }
+        .fertilizer-item .details { font-size: 0.85rem; color: var(--text-light); }
+        .soil-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .soil-item { padding: 0.75rem; background: #F5F5F5; border-radius: 8px; text-align: center; }
+        .soil-item .value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .soil-item .label { font-size: 0.75rem; color: var(--text-light); }
+        .total-cost { margin-top: 1rem; padding: 1rem; background: #E8F5E9; border-radius: 8px; text-align: right; font-size: 1.1rem; }
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--text-light); }
+        .spinner { width: 30px; height: 30px; border: 3px solid #E0E0E0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .data-source { font-size: 0.75rem; color: var(--text-light); text-align: right; margin-top: 0.5rem; }
+        .hidden { display: none; }
+        @media (max-width: 768px) { .container { padding: 1rem; } .input-grid { grid-template-columns: 1fr; } .results-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🌾 Padi AI - Smart Farming Assistant</h1>
+        <p>Real-time weather, soil analysis & crop recommendations (FREE APIs)</p>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2>📍 Farm Location</h2>
+            <div class="input-grid">
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="number" id="latitude" value="6.0" step="0.0001" placeholder="e.g., 6.0">
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="number" id="longitude" value="100.4" step="0.0001" placeholder="e.g., 100.4">
+                </div>
+                <div class="form-group">
+                    <label>Padi Variety</label>
+                    <select id="variety">
+                        <option value="MR219">MR219 (Standard)</option>
+                        <option value="MR220">MR220</option>
+                        <option value="MR263">MR263 (Early)</option>
+                        <option value="MR269">MR269 (Blast Resistant)</option>
+                        <option value="MR297">MR297</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Growth Stage</label>
+                    <select id="growthStage">
+                        <option value="seedling">Seedling</option>
+                        <option value="tillering" selected>Tillering</option>
+                        <option value="panicle_initiation">Panicle Initiation</option>
+                        <option value="flowering">Flowering</option>
+                        <option value="grain_filling">Grain Filling</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn" id="analyzeBtn" onclick="analyze()">🔍 Analyze Farm</button>
+        </div>
+
+        <div id="results" class="hidden">
+            <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <strong>ℹ️ Data Sources:</strong>
+                <span id="dataSources">Loading...</span>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-section">
+                    <h3>🌤️ Current Weather</h3>
+                    <div id="weatherContent"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🦠 Disease Risks</h3>
+                    <div id="diseaseContent"><div class="loading"><div class="spinner"></div>Analyzing...</div></div>
+                </div>
+
+                <div class="result-section">
+                    <h3>💨 Spraying Conditions</h3>
+                    <div id="sprayingContent"><div class="loading"><div class="spinner"></div>Checking...</div></div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🌱 Soil Analysis</h3>
+                    <div id="soilContent"><div class="loading"><div class="spinner"></div>Analyzing...</div></div>
+                </div>
+
+                <div class="result-section" style="grid-column: 1 / -1;">
+                    <h3>🧪 Fertilizer Recommendations</h3>
+                    <div id="fertilizerContent"><div class="loading"><div class="spinner"></div>Generating...</div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const weatherIcons = {
+            'sunny': '☀️', 'partly_cloudy': '⛅', 'cloudy': '☁️',
+            'rainy': '🌧️', 'heavy_rain': '⛈️', 'stormy': '🌩️',
+            'foggy': '🌫️', 'snowy': '❄️', 'unknown': '❓'
+        };
+
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            const results = document.getElementById('results');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Analyzing...';
+            results.classList.remove('hidden');
+
+            ['weatherContent', 'diseaseContent', 'sprayingContent', 'soilContent', 'fertilizerContent'].forEach(id => {
+                document.getElementById(id).innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+            });
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitude: parseFloat(document.getElementById('latitude').value),
+                        longitude: parseFloat(document.getElementById('longitude').value),
+                        variety: document.getElementById('variety').value,
+                        growth_stage: document.getElementById('growthStage').value
+                    })
+                });
+                const result = await response.json();
+                const a = result.analysis;
+
+                document.getElementById('dataSources').textContent = 
+                    `Weather: ${a.data_source_weather || '--'} | Soil: ${a.data_source_soil || '--'}`;
+
+                // Weather
+                if (a.weather) {
+                    const w = a.weather;
+                    const icon = weatherIcons[w.condition_icon] || '🌤️';
+                    document.getElementById('weatherContent').innerHTML = `
+                        <div class="weather-main">
+                            <div class="weather-icon">${icon}</div>
+                            <div class="weather-temp">${w.temperature_c}°C</div>
+                            <div style="font-size: 1.1rem; color: #666;">${w.condition}</div>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-item">💧 <span>Humidity: ${w.humidity_percent}%</span></div>
+                            <div class="weather-item">💨 <span>Wind: ${w.wind_speed_kmh} km/h ${w.wind_direction}</span></div>
+                            <div class="weather-item">🌡️ <span>High: ${w.temperature_max_c}° / Low: ${w.temperature_min_c}°</span></div>
+                            <div class="weather-item">🌧️ <span>Rain: ${w.rainfall_mm} mm</span></div>
+                        </div>
+                        ${a.forecasts && a.forecasts.length ? '<h4 style="margin: 1rem 0 0.5rem; color: #1B5E20;">7-Day Forecast</h4><div class="forecast-list">' + a.forecasts.map(f => {
+                            const d = new Date(f.date);
+                            const day = d.toLocaleDateString('en-US', { weekday: 'short' });
+                            return `<div class="forecast-day"><div class="date">${day}</div><div style="font-size:1.5rem;">${weatherIcons[f.condition_icon] || '⛅'}</div><div class="temp">${Math.round(f.temp_max_c)}°/${Math.round(f.temp_min_c)}°</div><div class="rain">💧 ${f.rainfall_probability}%</div></div>`;
+                        }).join('') + '</div>' : ''}
+                    `;
+                } else {
+                    document.getElementById('weatherContent').innerHTML = '<div style="color: #D32F2F;">Weather data unavailable</div>';
+                }
+
+                // Disease Risks
+                if (a.disease_risks && a.disease_risks.length) {
+                    document.getElementById('diseaseContent').innerHTML = a.disease_risks.map(r => {
+                        const cls = r.risk_level === 'HIGH' ? 'risk-high' : r.risk_level === 'MODERATE' ? 'risk-moderate' : 'risk-low';
+                        return `<div class="risk-card ${cls}"><div class="risk-header"><span class="risk-name">${r.disease}</span><span class="risk-level">${r.risk_level}</span></div><div style="font-size:0.85rem;">${r.recommendation}</div></div>`;
+                    }).join('');
+                } else {
+                    document.getElementById('diseaseContent').innerHTML = '<div style="color: #757575;">No risk data</div>';
+                }
+
+                // Spraying
+                if (a.spraying) {
+                    const s = a.spraying;
+                    const cls = s.status === 'SUITABLE' ? 'status-good' : s.status === 'CAUTION' ? 'status-warning' : 'status-danger';
+                    document.getElementById('sprayingContent').innerHTML = `<div class="status-badge ${cls}">${s.icon} ${s.status.replace('_', ' ')}</div><p>${s.message}</p><p style="margin-top:0.5rem; font-size:0.9rem;">Best time: ${s.best_time}</p>`;
+                }
+
+                // Soil
+                if (a.soil) {
+                    const s = a.soil;
+                    const phStatus = s.ph < 5.5 ? '🔴 Acidic' : s.ph > 7.0 ? '🟡 Alkaline' : '🟢 Optimal';
+                    document.getElementById('soilContent').innerHTML = `
+                        <div class="soil-grid">
+                            <div class="soil-item"><div class="value">${s.ph}</div><div class="label">pH ${phStatus}</div></div>
+                            <div class="soil-item"><div class="value">${s.clay_percent}%</div><div class="label">Clay</div></div>
+                            <div class="soil-item"><div class="value">${s.sand_percent}%</div><div class="label">Sand</div></div>
+                            <div class="soil-item"><div class="value">${s.organic_carbon_percent}%</div><div class="label">Organic C</div></div>
+                        </div>
+                    `;
+                }
+
+                // Fertilizer
+                if (a.fertilizer) {
+                    const f = a.fertilizer;
+                    document.getElementById('fertilizerContent').innerHTML = `
+                        <p style="margin-bottom:1rem;"><strong>Variety:</strong> ${f.variety} | <strong>Soil pH:</strong> ${f.soil_ph}</p>
+                        ${f.recommendations.map(r => `<div class="fertilizer-item"><div><div class="type">${r.type}</div><div class="details">${r.product} - ${r.rate}</div></div><div style="text-align:right;"><div style="font-weight:bold; color:#2E7D32;">RM ${r.cost_rm}</div><div style="font-size:0.75rem; color:#757575;">${r.timing}</div></div></div>`).join('')}
+                        <div class="total-cost"><strong>Estimated Cost:</strong> <span style="font-size:1.3rem; font-weight:bold; color:#2E7D32;">RM ${f.total_estimated_cost_rm_ha}/ha</span></div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                ['weatherContent', 'diseaseContent', 'sprayingContent', 'soilContent', 'fertilizerContent'].forEach(id => {
+                    document.getElementById(id).innerHTML = '<div style="color:#D32F2F;">Error loading data</div>';
+                });
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Analyze Farm';
+        }
+
+        // Auto-detect location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    document.getElementById('latitude').value = pos.coords.latitude.toFixed(4);
+                    document.getElementById('longitude').value = pos.coords.longitude.toFixed(4);
+                },
+                () => {}
+            );
+        }
+    </script>
+</body>
+</html>
