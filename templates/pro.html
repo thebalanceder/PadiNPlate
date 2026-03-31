@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padi AI Pro - Smart Farming</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-dark: #1B5E20;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+            --background: #FAFAFA;
+            --card: #FFFFFF;
+            --text: #212121;
+            --danger: #D32F2F;
+            --warning: #F57C00;
+            --success: #388E3C;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--background); color: var(--text); }
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 2rem; }
+        .header h1 { font-size: 2rem; }
+        .header p { opacity: 0.9; margin-top: 0.5rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        /* Rank Badges */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        .rank-S { background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        .rank-A { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); }
+        .rank-B { background: linear-gradient(135deg, #CD7F32, #B87333); }
+        .rank-C { background: #888; }
+        .rank-D { background: #666; }
+        
+        /* Input Section */
+        .input-section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .input-section h2 { color: var(--primary-dark); margin-bottom: 1.5rem; }
+        
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 0.75rem; border: 2px solid #E0E0E0; border-radius: 8px; font-size: 1rem;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; }
+        
+        .symptoms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+        .symptom-chip {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem;
+            background: #F5F5F5; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .symptom-chip:hover { background: #E8F5E9; }
+        .symptom-chip.selected { background: var(--primary); color: white; }
+        .symptom-chip input { display: none; }
+        
+        .btn { padding: 1rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { background: #BDBDBD; cursor: not-allowed; }
+        
+        /* Results */
+        .results { display: none; }
+        .results.show { display: block; }
+        
+        .diagnosis-card {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .diagnosis-card h2 { font-size: 1.8rem; color: var(--primary-dark); }
+        .confidence { font-size: 1.2rem; color: var(--text); margin-top: 0.5rem; }
+        .confidence span { color: var(--success); font-weight: bold; }
+        
+        /* Solution Cards */
+        .solutions-grid { display: grid; gap: 1.5rem; }
+        
+        .solution-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        .solution-card.recommended {
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 30px rgba(255,215,0,0.2);
+        }
+        
+        .solution-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .solution-name { font-size: 1.3rem; font-weight: bold; color: var(--primary-dark); }
+        .solution-type { font-size: 0.85rem; color: var(--text); }
+        
+        .solution-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 0.75rem; color: var(--text); opacity: 0.7; }
+        
+        .products-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #E0E0E0; }
+        .products-section h4 { margin-bottom: 0.75rem; color: var(--text); }
+        .product-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem; background: #F5F5F5; border-radius: 8px; margin-bottom: 0.5rem;
+        }
+        .product-name { font-weight: 600; }
+        .product-source { font-size: 0.85rem; color: var(--text); }
+        .product-price { font-weight: bold; color: var(--primary); }
+        .buy-btn {
+            padding: 0.5rem 1rem; background: var(--primary); color: white;
+            border: none; border-radius: 6px; cursor: pointer; text-decoration: none;
+        }
+        .buy-btn:hover { background: var(--primary-dark); }
+        
+        .pros-cons { display: flex; gap: 2rem; margin-top: 1rem; }
+        .pros { color: var(--success); }
+        .cons { color: var(--danger); }
+        .pros-cons li { margin-bottom: 0.25rem; }
+        
+        .cost-summary {
+            background: #E8F5E9; padding: 1rem; border-radius: 8px; margin-top: 1rem;
+        }
+        .cost-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #C8E6C9; }
+        .cost-row:last-child { border: none; font-weight: bold; color: var(--primary-dark); }
+        .cost-benefit { display: flex; gap: 1rem; margin-top: 1rem; }
+        .benefit-box { flex: 1; padding: 1rem; background: white; border-radius: 8px; text-align: center; }
+        .benefit-value { font-size: 1.5rem; font-weight: bold; color: var(--success); }
+        .benefit-label { font-size: 0.85rem; color: var(--text); }
+        
+        .action-plan {
+            background: var(--card); border-radius: 16px; padding: 2rem; margin-top: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .action-plan h3 { color: var(--primary-dark); margin-bottom: 1rem; }
+        .action-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .action-category { background: #F5F5F5; padding: 1rem; border-radius: 8px; }
+        .action-category h4 { color: var(--primary); margin-bottom: 0.75rem; }
+        .action-category li { margin-bottom: 0.5rem; padding-left: 1rem; }
+        
+        .loading { display: flex; align-items: center; justify-content: center; padding: 3rem; color: var(--text); }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #E0E0E0;
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-right: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (max-width: 768px) {
+            .solution-card { grid-template-columns: 1fr; }
+            .solution-card > .rank-badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🌾 Padi AI Pro</h1>
+        <p>Smart Farming with Ranked Solutions & Purchase Links</p>
+    </header>
+
+    <main class="container">
+        <!-- Input Section -->
+        <section class="input-section">
+            <h2>📋 Describe Your Problem</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Select Symptoms (click to select)</label>
+                </div>
+            </div>
+            
+            <div class="symptoms-grid" id="symptomsGrid">
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="diamond-shaped lesions">
+                    🔷 Diamond-shaped lesions
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="gray center">
+                    ⭕ Gray center spots
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="yellow halo">
+                    🟡 Yellow halo around spots
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="oval lesions">
+                    🔶 Oval lesions
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="sheath rotting">
+                    🌱 Sheath rotting
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="bacterial ooze">
+                    💧 Bacterial ooze
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="water-soaked">
+                    💦 Water-soaked appearance
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="yellow-orange">
+                    🟠 Yellow-orange discoloration
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="stunted growth">
+                    📏 Stunted growth
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="brown spots">
+                    🟤 Brown spots
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="elliptical">
+                    ⬭ Elliptical spots
+                </label>
+                <label class="symptom-chip">
+                    <input type="checkbox" name="symptoms" value="reduced tillering">
+                    🌿 Reduced tillering
+                </label>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Budget Priority</label>
+                    <select id="budget">
+                        <option value="low">💰 Budget (Cheapest)</option>
+                        <option value="medium" selected>⚖️ Standard (Balanced)</option>
+                        <option value="high">💎 Premium (Best Results)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Urgency</label>
+                    <select id="urgency">
+                        <option value="low">🕐 Low (Can wait)</option>
+                        <option value="medium" selected>⏰ Medium (This week)</option>
+                        <option value="high">🚨 High (Urgent!)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preference</label>
+                    <select id="preference">
+                        <option value="balanced" selected>⚖️ Balanced</option>
+                        <option value="effectiveness">🎯 Effectiveness First</option>
+                        <option value="cost">💰 Cost First</option>
+                        <option value="speed">⚡ Speed First</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Farm Size (hectares)</label>
+                    <input type="number" id="farmSize" value="1" min="0.1" step="0.1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Additional Symptoms (comma separated)</label>
+                <textarea id="customSymptoms" rows="2" placeholder="e.g., neck rot, lodging, leaf death"></textarea>
+            </div>
+            
+            <button class="btn btn-primary" id="analyzeBtn" onclick="analyze()">
+                🔍 Analyze & Get Ranked Solutions
+            </button>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results" id="results">
+            <!-- Diagnosis -->
+            <div class="diagnosis-card">
+                <h2 id="diseaseName">🏥 Diagnosis</h2>
+                <p class="confidence">Confidence: <span id="confidence">--</span>%</p>
+            </div>
+
+            <!-- Solutions -->
+            <h2 style="margin-bottom: 1rem;">🏆 Ranked Solutions</h2>
+            <div class="solutions-grid" id="solutionsGrid">
+                <!-- Solutions will be populated here -->
+            </div>
+
+            <!-- Action Plan -->
+            <div class="action-plan">
+                <h3>📋 Action Plan</h3>
+                <div class="action-list" id="actionPlan">
+                    <!-- Actions will be populated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Symptom chip selection
+        document.querySelectorAll('.symptom-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('selected');
+            });
+        });
+
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            const results = document.getElementById('results');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0;"></div> Analyzing...';
+            results.classList.add('show');
+            
+            // Gather symptoms
+            const symptoms = [];
+            document.querySelectorAll('.symptom-chip.selected input').forEach(input => {
+                symptoms.push(input.value);
+            });
+            
+            // Add custom symptoms
+            const custom = document.getElementById('customSymptoms').value;
+            if (custom) {
+                symptoms.push(...custom.split(',').map(s => s.trim()).filter(s => s));
+            }
+            
+            const data = {
+                symptoms: symptoms,
+                budget: document.getElementById('budget').value,
+                urgency: document.getElementById('urgency').value,
+                preference: document.getElementById('preference').value,
+                farm_size: parseFloat(document.getElementById('farmSize').value)
+            };
+            
+            try {
+                const response = await fetch('/api/diagnose', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                renderResults(result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error analyzing. Please try again.');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '🔍 Analyze & Get Ranked Solutions';
+        }
+
+        function renderResults(result) {
+            // Diagnosis
+            document.getElementById('diseaseName').textContent = '🦠 ' + result.diagnosis.disease;
+            document.getElementById('confidence').textContent = (result.diagnosis.confidence * 100).toFixed(0);
+            
+            // Solutions
+            const grid = document.getElementById('solutionsGrid');
+            grid.innerHTML = '';
+            
+            result.ranked_solutions.forEach((sol, idx) => {
+                const isRecommended = idx === 0;
+                
+                let productsHTML = '';
+                if (sol.products && sol.products.length > 0) {
+                    productsHTML = `
+                        <div class="products-section">
+                            <h4>🛒 Recommended Products</h4>
+                            ${sol.products.map(p => `
+                                <div class="product-item">
+                                    <div>
+                                        <div class="product-name">${p.name}</div>
+                                        <div class="product-source">${p.source} • ${p.price}</div>
+                                    </div>
+                                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                                        <span class="product-price">${p.price}</span>
+                                        <a href="${p.url}" target="_blank" class="buy-btn">Buy →</a>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                const pros = sol.pros ? sol.pros.slice(0, 3).map(p => `<li>✅ ${p}</li>`).join('') : '';
+                const cons = sol.cons ? sol.cons.slice(0, 2).map(c => `<li>⚠️ ${c}</li>`).join('') : '';
+                
+                grid.innerHTML += `
+                    <div class="solution-card ${isRecommended ? 'recommended' : ''}">
+                        <div>
+                            <div class="rank-badge rank-${sol.rank}">${sol.rank}</div>
+                            ${isRecommended ? '<div style="text-align:center;margin-top:0.5rem;font-size:0.75rem;color:#FFD700;">⭐ RECOMMENDED</div>' : ''}
+                        </div>
+                        <div>
+                            <div class="solution-header">
+                                <div>
+                                    <div class="solution-name">${sol.name}</div>
+                                    <div class="solution-type">${sol.type.toUpperCase()} Solution</div>
+                                </div>
+                            </div>
+                            
+                            <div class="solution-stats">
+                                <div class="stat">
+                                    <div class="stat-value">${sol.effectiveness}</div>
+                                    <div class="stat-label">Effectiveness</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${sol.speed}</div>
+                                    <div class="stat-label">Speed</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${sol.cost}</div>
+                                    <div class="stat-label">Cost</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${sol.time_to_effect}</div>
+                                    <div class="stat-label">Time to Effect</div>
+                                </div>
+                            </div>
+                            
+                            ${productsHTML}
+                            
+                            <div class="pros-cons">
+                                <ul class="pros">${pros}</ul>
+                                <ul class="cons">${cons}</ul>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.5rem;font-weight:bold;color:var(--primary);">${sol.cost}</div>
+                            <div style="font-size:0.85rem;color:var(--text);opacity:0.7;">Total Cost</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Cost Analysis
+            const ca = result.cost_analysis;
+            
+            // Action Plan
+            const ap = result.action_plan;
+            document.getElementById('actionPlan').innerHTML = `
+                <div class="action-category">
+                    <h4>⚡ Immediate Actions</h4>
+                    <ul>${ap.immediate.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+                <div class="action-category">
+                    <h4>👁️ Monitoring</h4>
+                    <ul>${ap.monitoring.map(m => `<li>${m}</li>`).join('')}</ul>
+                </div>
+                <div class="action-category">
+                    <h4>🛡️ Prevention</h4>
+                    <ul>${ap.prevention.map(p => `<li>${p}</li>`).join('')}</ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,78 +1,156 @@
-# Padi AI System - Smart Farming Assistant
+# 🌾 Padi AI Pro - Smart Farming System
 
-**100% Real Data** - No simulation, no hardcoding. All recommendations based on live APIs.
+**AI-powered farming assistant with ranked solutions and real purchase links.**
 
-## Data Sources
+## Features
 
-| Data | Source | Type |
-|------|--------|------|
-| Weather | **Open-Meteo API** | REAL |
-| Soil Properties | **SoilGrids ISRIC** | REAL |
-| Disease Risks | **Calculated from real weather** | DYNAMIC |
-| Fertilizer | **Calculated from real soil** | DYNAMIC |
+### 🏆 Ranked Solutions (S/A/B/C Ratings)
+- **S Rank**: Best overall solution based on your priorities
+- **A Rank**: Excellent alternative
+- **B Rank**: Good value option
+- **C Rank**: Budget option
 
-## How to Run
+### 💰 Cost Analysis
+- Money perspective (total cost, cost per hectare)
+- Quality perspective (effectiveness %)
+- Time perspective (speed, payback period)
+- ROI calculation
+
+### 🛒 Real Purchase Links
+- Specific products from Malaysian suppliers
+- Price comparison
+- Delivery information
+- Multiple source options
+
+### 🔬 AI-Powered Diagnosis
+- Symptom-based disease identification
+- Confidence scoring
+- Severity assessment
+
+## Quick Start
 
 ```bash
-cd "/mnt/c/Users/USER-PC/Downloads/test/created_lib/test/hi/Padi-AI-System"
+cd Padi-AI-System
+
+# Run Basic System (Weather + Soil)
 python main.py
+# Open: http://localhost:5000
+
+# Run Enhanced System (Disease + Solutions + Purchase Links)
+python padi_pro_web.py
+# Open: http://localhost:5001
 ```
 
-Then open: **http://localhost:5000**
+## Two Systems
 
-## What's Dynamic?
+### 1. Basic System (port 5000)
+- Real weather from Open-Meteo API
+- Real soil data from SoilGrids
+- Fertilizer recommendations
+- Disease risk assessment
 
-### Weather (Open-Meteo - FREE, No API Key)
-- ✅ Current temperature (real)
-- ✅ Current humidity (real)
-- ✅ Wind speed & direction (real)
-- ✅ Rainfall (real)
-- ✅ 7-day forecast (real)
-- ✅ Humidity forecast (real)
+### 2. Pro System (port 5001)
+- Symptom-based disease diagnosis
+- Ranked solutions (S/A/B/C)
+- Product purchase links
+- Cost-benefit analysis
+- Action plans
 
-### Soil (SoilGrids - FREE, No API Key)
-- ✅ pH level (real predicted value)
-- ✅ Clay percentage (real)
-- ✅ Sand percentage (real)
-- ✅ Organic carbon (real)
-- ✅ CEC (real)
-- ✅ Bulk density (real)
+## Example Usage
 
-### Fertilizer Recommendations (Fully Dynamic)
-Based on **your actual soil data**:
-- Lime rate calculated from **actual pH**
-- N rate calculated from **actual organic carbon**
-- P rate calculated from **actual clay content**
-- K rate calculated from **actual CEC**
-- Zinc recommendation based on **actual pH + clay**
-
-### Disease Risks (Fully Dynamic)
-Calculated from **your actual weather**:
-- Rice Blast risk from real temperature + humidity
-- Sheath Blight risk from real conditions
-- Bacterial Blight risk from real wind + rain
-
-## No API Keys Needed
-
-Everything works with **FREE APIs**:
-- Open-Meteo: api.open-meteo.com
-- SoilGrids: rest.isric.org/soilgrids
-
-## Files
+### Pro System - Disease Diagnosis
 
 ```
-Padi-AI-System/
-├── main.py              # Flask web app
-├── templates/index.html # Web UI
-├── requirements.txt    # Dependencies
-└── README.md
+1. User selects symptoms: "diamond-shaped lesions", "gray center"
+2. AI diagnoses: Rice Blast (92% confidence)
+3. System shows ranked solutions:
+   
+   [S] Chemical Treatment (Premium)
+       Effectiveness: 95% | Speed: 90% | Cost: RM 108
+       Products:
+         - Isoprothiolane 40EC (RM 58) from Kedah Agro
+           🔗 https://www.kedahagro.com
+       
+   [A] Integrated Pest Management
+       Effectiveness: 82% | Speed: 70% | Cost: RM 88
+       ...
+   
+   [B] Organic/Biological Treatment
+       Effectiveness: 65% | Speed: 35% | Cost: RM 90
+       ...
+   
+   [C] Cultural Practices Only
+       Effectiveness: 45% | Speed: 30% | Cost: RM 0
+       ...
 ```
 
 ## API Endpoints
 
 ```bash
-# Get full analysis
-curl -X POST http://localhost:5000/api/analyze \
+# Pro System - Full Diagnosis
+curl -X POST http://localhost:5001/api/diagnose \
   -H "Content-Type: application/json" \
-  -d '{"latitude": 6.0, "longitude": 100.4}'
+  -d '{"symptoms": ["diamond-shaped lesions"], "budget": "medium"}'
+
+# Pro System - Rank Solutions
+curl -X POST http://localhost:5001/api/rank-solutions \
+  -H "Content-Type: application/json" \
+  -d '{"disease": "rice_blast", "budget": "medium"}'
 ```
+
+## File Structure
+
+```
+Padi-AI-System/
+├── main.py                    # Basic system (weather + soil)
+├── padi_ai_pro.py            # Pro engine (ranked solutions)
+├── padi_pro_web.py            # Pro web interface
+├── templates/
+│   ├── index.html            # Basic UI
+│   └── pro.html              # Pro UI
+├── requirements.txt
+└── README.md
+```
+
+## Real Data Sources
+
+| Component | Source | URL |
+|-----------|--------|-----|
+| Weather | Open-Meteo | api.open-meteo.com |
+| Soil | SoilGrids | rest.isric.org |
+| Products | Malaysian Suppliers | Various |
+
+## Disease Database
+
+| Disease | Symptoms | Products |
+|---------|----------|----------|
+| Rice Blast | Diamond lesions, gray center | Tricyclazole, Hexaconazole |
+| Sheath Blight | Oval lesions, sheath rot | Validamycin, Carbendazim |
+| Bacterial Blight | Yellow tip, ooze | Copper-based |
+| Tungro Virus | Yellow-orange, stunting | Imidacloprid |
+| Brown Spot | Brown elliptical spots | Mancozeb |
+
+## Cost Tiers
+
+| Tier | Cost/ha | Options |
+|------|---------|----------|
+| Budget | < RM 150 | Cultural + Organic |
+| Standard | RM 150-300 | IPM approach |
+| Premium | > RM 300 | Chemical + Equipment |
+
+## Development
+
+```bash
+# Install dependencies
+pip install flask requests python-dotenv
+
+# Run tests
+python padi_ai_pro.py
+
+# Run web
+python padi_pro_web.py
+```
+
+## License
+
+MIT - Free for agricultural use
